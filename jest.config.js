@@ -14,8 +14,12 @@ module.exports = {
   transform: {
     '^.+\\.vue$': 'vue-jest',
     '^.+\\.js$': 'babel-jest',
+    '.+\\.(css|scss|jpe?g|png|gif|webp|svg|mp4|webm|ogg|mp3|wav|flac|aac|woff2?|eot|ttf|otf)$':
+      'jest-transform-stub',
   },
-  moduleNameMapper: require('./aliases.config').jest,
+  moduleNameMapper: {
+    ...require('./aliases.config').jest,
+  },
   snapshotSerializers: ['jest-serializer-vue'],
   coverageDirectory: '<rootDir>/tests/unit/coverage',
   collectCoverageFrom: [
@@ -35,9 +39,17 @@ module.exports = {
   // Solves: https://stackoverflow.com/questions/42677387/jest-returns-network-error-when-doing-an-authenticated-request-with-axios
   testURL:
     process.env.API_BASE_URL || `http://localhost:${process.env.MOCK_API_PORT}`,
+  // https://github.com/jest-community/jest-watch-typeahead
+  watchPlugins: [
+    'jest-watch-typeahead/filename',
+    'jest-watch-typeahead/testname',
+  ],
   globals: {
     'vue-jest': {
-      // Disable CSS compilation until it's more stable
+      // Compilation errors in the <style> tags of Vue components will
+      // already result in failing builds, so compiling CSS during unit
+      // tests doesn't protect us from anything. It only complicates
+      // and slows down our unit tests.
       experimentalCSSCompile: false,
     },
   },

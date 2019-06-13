@@ -1,23 +1,26 @@
 # Languages and technologies
 
-- [JavaScript](#javascript)
-  - [Polyfills](#polyfills)
-  - [Vue](#vue)
-  - [Vue Router](#vue-router)
-  - [Vuex (state management)](#vuex-state-management)
-  - [JavaScript FAQ](#javascript-faq)
-- [HTML](#html)
-  - [Templates](#templates)
-  - [Render functions](#render-functions)
-  - [HTML FAQ](#html-faq)
-- [CSS](#css)
-  - [SCSS](#scss)
-  - [Importing global modules](#importing-global-modules)
-  - [Design variables and tooling](#design-variables-and-tooling)
-  - [CSS modules](#css-modules)
-    - [Sharing SCSS variables with JavaScript](#sharing-scss-variables-with-javascript)
-  - [Global CSS](#global-css)
-  - [CSS FAQ](#css-faq)
+- [Languages and technologies](#languages-and-technologies)
+  - [JavaScript](#javascript)
+    - [Polyfills](#polyfills)
+    - [Vue](#vue)
+    - [Vue Router](#vue-router)
+    - [Vuex (state management)](#vuex-state-management)
+    - [JavaScript FAQ](#javascript-faq)
+  - [HTML](#html)
+    - [Templates](#templates)
+    - [Render functions](#render-functions)
+    - [HTML FAQ](#html-faq)
+  - [CSS](#css)
+    - [SCSS](#scss)
+    - [Importing global modules](#importing-global-modules)
+    - [Referencing aliased asset URLs](#referencing-aliased-asset-urls)
+    - [Design variables and tooling](#design-variables-and-tooling)
+    - [CSS modules](#css-modules)
+      - [Styling subcomponents](#styling-subcomponents)
+      - [Sharing SCSS variables with JavaScript](#sharing-scss-variables-with-javascript)
+    - [Global CSS](#global-css)
+    - [CSS FAQ](#css-faq)
 
 ## JavaScript
 
@@ -36,7 +39,9 @@ Reading these sections alone will get you 99% of the way to mastering Babel code
 
 ### Polyfills
 
-Instead of using Babel's polyfills with [babel-plugin-transform-runtime](https://www.npmjs.com/package/babel-plugin-transform-runtime), we use the [Polyfill.io](https://polyfill.io/v2/docs/) service. This serves browser-specific polyfills, so that each visitor downloads the minimum code necessary to use the latest, polyfillable browser features.
+This project uses Vue CLI's [modern mode](https://cli.vuejs.org/guide/browser-compatibility.html#modern-mode), which creates two bundles: one modern bundle targeting modern browsers that support [ES modules](https://jakearchibald.com/2017/es-modules-in-browsers/), and one legacy bundle targeting older browsers that do not.
+
+For each bundle, polyfills for any JavaScript features you use are included based on the target bundle and supported browsers defined by `browserslist` in `package.json`.
 
 ### Vue
 
@@ -66,20 +71,6 @@ There are also a few disadvantages I've seen in practice:
 - Despite most bugs having nothing to do with type violations, developers can spend _a lot_ of time working towards full type safety. As I mentioned earlier, I think that time would be better spent on tests and code reviews.
 - ESLint remains a much more versatile linter than TSLint and [its TypeScript parser](https://github.com/eslint/typescript-eslint-parser) is still experimental, so may waste time with false positives - or worse, simply miss clear violations.
 
-**Why use Polyfill.io instead of Babel's built-in polyfills?**
-
-With `babel-preset-env`, Babel can only bundle polyfills for features you actually use in your app and only for the lowest common denominator in the list of browsers you've chosen to support in `browserslist` from `package.json`.
-
-That might _sound_ great, but it's not ideal for many applications. Let's say 90% of your users are on Chrome and Firefox and need almost no polyfills at all (~0.2KB gzipped). But if you support IE9, you might need to bundle almost 15KB gzipped into your app, _just in case_ the visitor is using that browser.
-
-There's also an issue with the feature to only include polyfills you know you'll need - Babel doesn't compile vendor modules. So for example, if you use Vuex (which requires promise support), but don't use any promises in your app, then you'll be missing a polyfill without knowing it.
-
-Polyfill.io solves these problems by:
-
-- ensuring that every browser has any polyfills it might need
-- uses `User-Agent` detection to only serve the polyfills necessary per browser
-- separates polyfills from the app build, so they can be cached
-
 ## HTML
 
 All HTML will exist within [`.vue` files](https://vuejs.org/v2/guide/single-file-components.html), either:
@@ -94,7 +85,7 @@ All HTML will exist within [`.vue` files](https://vuejs.org/v2/guide/single-file
 For example, any element or component can be self-closing:
 
 ```html
-<span class="fa fa-comment"/>
+<span class="fa fa-comment" />
 ```
 
 The above simply compiles to:
@@ -140,9 +131,9 @@ There are no advantages to using a JS(X) file, other than not having to use a `<
 
 For our styles, we're using SCSS and CSS modules, which you can activate by adding the `lang="scss"` and `module` attributes to style tags in Vue components:
 
-```html
+```vue
 <style lang="scss" module>
-  /* Styles go here */
+/* Styles go here */
 </style>
 ```
 
@@ -160,10 +151,18 @@ Just those features cover at least 95% of use cases.
 
 ### Importing global modules
 
-To import files from `node_modules` using aliases, Webpack's [css-loader](https://github.com/webpack-contrib/css-loader) requires adding `~` to the beginning of a module name to denote that it's an global (not relative) file reference. For example:
+To import files from `node_modules`, Webpack's [css-loader](https://github.com/webpack-contrib/css-loader) requires adding `~` to the beginning of a module name to denote that it's a global (not relative) file reference. For example:
 
 ```scss
-@import '~font-awesome/scss/font-awesome';
+@import '~nprogress/nprogress.css';
+```
+
+### Referencing aliased asset URLs
+
+Similarly to importing global modules, referencing aliased assets in _non_-module CSS also requires the `~` at the beginning of the name. For example:
+
+```scss
+background: url('~@assets/images/background.png');
 ```
 
 ### Design variables and tooling
@@ -182,8 +181,8 @@ This makes all our design variables available in your component or SCSS file.
 
 As mentioned earlier, every Vue component should be a CSS module. That means the classes you define are not _actually_ classes. When you write:
 
-```html
-<style lang='scss' module>
+```vue
+<style lang="scss" module>
 .inputLabel {
   /* ... */
 }
@@ -198,8 +197,8 @@ You're actually defining values on a `$style` property of the Vue instance such 
 
 ```js
 $style: {
-  inputLabel: 'base-input_inputLabel__3EAebB_0',
-  input: 'base-input_input__3EAebB_1'
+  inputLabel: 'base-input_inputLabel_dsRsJ',
+  input: 'base-input_input_dsRsJ'
 }
 ```
 
@@ -211,6 +210,40 @@ These values contain automatically generated classes with:
 
 Do you know what that means?! You can _never_ accidentally write styles that interfere with another component. You also don't have to come up with clever class names, unique across the entire project. You can use class names like `.input`, `.container`, `.checkbox`, or whatever else makes sense within the isolated scope of the component - just like you would with JavaScript variables.
 
+#### Styling subcomponents
+
+To pass a class to a child component, it's usually best to do so as a prop:
+
+```vue
+<template>
+  <BaseInputText :labelClass="$style.label">
+</template>
+
+<style lang="scss" module>
+.label {
+  /* ... */
+}
+</style>
+```
+
+In some cases however, you may want to style a component arbitrarily deep. This should generally be avoided, because overuse can make your CSS very brittle and difficult to maintain, but sometimes it's unavoidable.
+
+In these cases, you can use an [attribute selector](https://developer.mozilla.org/en-US/docs/Web/CSS/Attribute_selectors) to take advantage of the fact that generated class names will always _start_ with the same characters:
+
+```vue
+<template>
+  <div :class="$style.container"><SomeOtherComponentContainingAnInput /></div>
+</template>
+
+<style lang="scss" module>
+.container [class^='base-input_inputLabel'] {
+  /* ... */
+}
+</style>
+```
+
+In the above example, we're applying styles to the `inputLabel` class inside a `base-input` component, but only when inside the element with the `container` class.
+
 #### Sharing SCSS variables with JavaScript
 
 If you ever need to expose the value of an SCSS variable to your JavaScript, you _can_ with CSS module exports! For example, assuming you have this variable defined:
@@ -221,7 +254,7 @@ $size-grid-padding: 1.3rem;
 
 You could import our design tooling, then use CSS modules' `:export` it:
 
-```html
+```vue
 <style lang="scss" module>
 @import '@design';
 

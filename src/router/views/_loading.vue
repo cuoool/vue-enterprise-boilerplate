@@ -12,13 +12,9 @@ export default {
 
 <template>
   <Layout>
-    <transition appear>
-      <BaseIcon
-        :class="$style.loadingIcon"
-        name="sync"
-        spin
-      />
-    </transition>
+    <Transition appear>
+      <BaseIcon :class="$style.loadingIcon" name="sync" spin />
+    </Transition>
   </Layout>
 </template>
 

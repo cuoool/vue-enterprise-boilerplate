@@ -1,20 +1,12 @@
 import NavBarRoutes from './nav-bar-routes'
 
-const mountRoutes = options => {
+const mountRoutes = (options) => {
   return mount(
     {
-      components: { NavBarRoutes },
       render(h) {
         return (
           <ul>
-            <NavBarRoutes
-              routes={[
-                {
-                  name: 'aaa',
-                  title: 'bbb',
-                },
-              ]}
-            />
+            <NavBarRoutes {...{ props: options.propsData }} />
           </ul>
         )
       },

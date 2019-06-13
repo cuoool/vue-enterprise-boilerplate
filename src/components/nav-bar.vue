@@ -1,6 +1,6 @@
 <script>
 import { authComputed } from '@state/helpers'
-import NavBarRoutes from './nav-bar-routes.vue'
+import NavBarRoutes from './nav-bar-routes'
 
 export default {
   components: { NavBarRoutes },
@@ -38,15 +38,9 @@ export default {
 
 <template>
   <ul :class="$style.container">
-    <NavBarRoutes :routes="persistentNavRoutes"/>
-    <NavBarRoutes
-      v-if="loggedIn"
-      :routes="loggedInNavRoutes"
-    />
-    <NavBarRoutes
-      v-else
-      :routes="loggedOutNavRoutes"
-    />
+    <NavBarRoutes :routes="persistentNavRoutes" />
+    <NavBarRoutes v-if="loggedIn" :routes="loggedInNavRoutes" />
+    <NavBarRoutes v-else :routes="loggedOutNavRoutes" />
   </ul>
 </template>
 

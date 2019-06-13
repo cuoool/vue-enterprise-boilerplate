@@ -8,7 +8,7 @@ import axios from 'axios'
 // Utility functions
 // ===
 
-// https://vue-test-utils.vuejs.org/en/
+// https://vue-test-utils.vuejs.org/
 import vueTestUtils from '@vue/test-utils'
 // https://lodash.com/
 import _ from 'lodash'
@@ -34,25 +34,13 @@ Vue.config.productionTip = false
 
 const globalComponentFiles = fs
   .readdirSync(path.join(__dirname, '../../src/components'))
-  .filter(fileName => /^_base-.+\.vue$/.test(fileName))
+  .filter((fileName) => /^_base-.+\.vue$/.test(fileName))
 
 for (const fileName of globalComponentFiles) {
   const componentName = _.pascalCase(fileName.match(/^_(base-.+)\.vue$/)[1])
   const componentConfig = require('../../src/components/' + fileName)
   Vue.component(componentName, componentConfig.default || componentConfig)
 }
-
-// ===
-// Patch all components with a global mixin
-// ===
-
-Vue.mixin({
-  created() {
-    // HACK: Set a fallback for the `$style` until vue-jest
-    // includes better support for CSS modules.
-    this.$style = this.$style || {}
-  },
-})
 
 // ===
 // Mock window properties not handled by jsdom
@@ -79,10 +67,10 @@ Object.defineProperty(window, 'localStorage', {
 // Global helpers
 // ===
 
-// https://vue-test-utils.vuejs.org/en/api/mount.html
+// https://vue-test-utils.vuejs.org/api/#mount
 global.mount = vueTestUtils.mount
 
-// https://vue-test-utils.vuejs.org/en/api/shallowMount.html
+// https://vue-test-utils.vuejs.org/api/#shallowmount
 global.shallowMount = vueTestUtils.shallowMount
 
 // A special version of `shallowMount` for view components
@@ -105,13 +93,13 @@ global.shallowMountView = (Component, options = {}) => {
 global.createComponentMocks = ({ store, router, style, mocks, stubs }) => {
   // Use a local version of Vue, to avoid polluting the global
   // Vue and thereby affecting other tests.
-  // https://vue-test-utils.vuejs.org/en/api/createLocalVue.html
+  // https://vue-test-utils.vuejs.org/api/#createlocalvue
   const localVue = vueTestUtils.createLocalVue()
   const returnOptions = { localVue }
 
-  // https://vue-test-utils.vuejs.org/en/api/options.html#stubs
+  // https://vue-test-utils.vuejs.org/api/options.html#stubs
   returnOptions.stubs = stubs || {}
-  // https://vue-test-utils.vuejs.org/en/api/options.html#mocks
+  // https://vue-test-utils.vuejs.org/api/options.html#mocks
   returnOptions.mocks = mocks || {}
 
   // Converts a `store` option shaped like:
@@ -133,7 +121,7 @@ global.createComponentMocks = ({ store, router, style, mocks, stubs }) => {
     localVue.use(Vuex)
     returnOptions.store = new Vuex.Store({
       modules: Object.keys(store)
-        .map(moduleName => {
+        .map((moduleName) => {
           const storeModule = store[moduleName]
           return {
             [moduleName]: {
